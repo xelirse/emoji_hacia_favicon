@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emoji Favicon 16x16</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            background: #f0f0f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .card {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            text-align: center;
+            max-width: 400px;
+        }
+        input {
+            font-size: 1.5rem;
+            text-align: center;
+            width: 80px;
+            padding: 5px;
+            margin-bottom: 10px;
+            border: 2px solid #ccc;
+            border-radius: 6px;
+        }
+        button {
+            background: #6c63ff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #5a52d5;
+        }
+        pre {
+            background: #f8f8f8;
+            padding: 10px;
+            border-radius: 6px;
+            overflow-x: auto;
+            font-size: 0.8rem;
+            margin-top: 15px;
+            text-align: left;
+        }
+        canvas {
+            display: none; /* No necesitamos mostrarlo */
+        }
+        .note {
+            font-size: 0.85rem;
+            color: #666;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h2>🧙 Emoji como Favicon 16x16</h2>
+        <input type="text" id="emojiInput" value="🧙" maxlength="4" placeholder="Emoji">
+        <br>
+        <button id="generateBtn">Generar y aplicar favicon</button>
+        <pre id="base64Output">El código base64 aparecerá aquí...</pre>
+        <p class="note">El canvas se oculta, pero genera el favicon correctamente.</p>
+    </div>
+
+    <canvas id="faviconCanvas" width="16" height="16"></canvas>
+
+    <script>
+        (function() {
+            const emojiInput = document.getElementById('emojiInput');
+            const generateBtn = document.getElementById('generateBtn');
+            const canvas = document.getElementById('faviconCanvas');
+            const ctx = canvas.getContext('2d');
+            const base64Output = document.getElementById('base64Output');
+
+            function generateAndSetFavicon() {
+                // Limpiar canvas
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                let emoji = emojiInput.value.trim();
+                if (!emoji) emoji = '🧙';
+
+                // Dibujar el emoji centrado en 16x16
+                // Ajustar tamaño de fuente para que quepa (16px es pequeño, probamos con 12px)
+                let fontSize = 12;
+                ctx.font = `${fontSize}px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                
+                // Si el emoji es más ancho que el canvas, reducimos fuente
+                let metrics = ctx.measureText(emoji);
+                while (metrics.width > canvas.width - 2 && fontSize > 4) {
+                    fontSize -= 1;
+                    ctx.font = `${fontSize}px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif`;
+                    metrics = ctx.measureText(emoji);
+                }
+                
+                const x = canvas.width / 2;
+                const y = canvas.height / 2;
+                ctx.fillText(emoji, x, y);
+
+                // Generar data URL PNG
+                const dataURL = canvas.toDataURL('image/png');
+                
+                // Mostrar en el pre
+                base64Output.textContent = dataURL;
+
+                // Actualizar o crear el elemento <link rel="icon">
+                let faviconLink = document.querySelector('link[rel="icon"]');
+                if (!faviconLink) {
+                    faviconLink = document.createElement('link');
+                    faviconLink.rel = 'icon';
+                    document.head.appendChild(faviconLink);
+                }
+                faviconLink.href = dataURL;
+                
+                // También podrías usar type="image/png" pero no es necesario
+                faviconLink.type = 'image/png';
+            }
+
+            generateBtn.addEventListener('click', generateAndSetFavicon);
+            
+            // Generar automáticamente al cargar
+            window.addEventListener('load', generateAndSetFavicon);
+
+            // Enter en el input
+            emojiInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') generateAndSetFavicon();
+            });
+        })();
+    </script>
+</body>
+</html>
